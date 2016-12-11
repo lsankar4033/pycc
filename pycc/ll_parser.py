@@ -49,7 +49,7 @@ def build_first_sets(rules):
     nonterm_syms = set([rule.sym for rule in rules])
 
     for sym in nonterm_syms:
-        if sym not in first_sets:
+        if sym.char not in first_sets:
             first_sets = _add_sym_to_first_sets(sym, rules, first_sets)
 
     return first_sets
@@ -103,4 +103,4 @@ class LLParser:
         # - no nonterminal symbols used without
         # TODO add some grammar transformation (remove left recursion, left factoring)
         self.start_symbol = rules[0].sym
-        self.parse_table = self.build_parse_table(rules)
+        self.parse_table = build_parse_table(rules)
