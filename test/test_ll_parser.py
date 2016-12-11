@@ -1,71 +1,76 @@
 import unittest
 from pycc.ll_parser import *
 
+def build_rules(rule_strs):
+    """Test-only helper for building rule array from an array of the form:
+    [ ('A', 'Bc'),
+      ('B', 'd'),
+      ('B', '') ]
+
+    Note that this assumes that nonterminals are identified by their existence on the left-hand side of a
+    rule, so terminals with the same defining char as nonterminals are not allowed. Additionally, we assume
+    that no 'epsilon' char can occur within an expression (as this would make for an invalid grammar).
+    """
+    nonterm_chars = set([r[0] for r in rule_strs])
+
+    rules = []
+    for sym, exp_str in rule_strs:
+        exp_chars = list(exp_str)
+
+        if len(exp_chars) is 0:
+            exp = [TSym('')]
+        else:
+            exp = list(map(lambda c: NSym(c) if c in nonterm_chars else TSym(c), exp_chars))
+
+        rules.append(Rule(NSym(sym), exp))
+
+    return rules
+
+def _build_first_sets(rule_strs):
+    rules = build_rules(rule_strs)
+    return build_first_sets(rules)
+
 class TestFirstSets(unittest.TestCase):
     def test_basic(self):
-        # A -> ab
-        rules = [Rule(NSym('A'), [TSym('a'), TSym('b')])]
-        self.assertEqual(build_first_sets(rules), {'A': set(['a'])})
+        first_sets = _build_first_sets([
+            ('A', 'ab')
+        ])
+        self.assertEqual(first_sets['A'], set(['a']))
 
     def test_child_inheritance(self):
-        # A -> B
-        # B -> b
-        rules = [
-            Rule(NSym('A'), [NSym('B')]),
-            Rule(NSym('B'), [TSym('b')])
-        ]
-        self.assertEqual(build_first_sets(rules),
-                         {
-                             'A': set(['b']),
-                             'B': set(['b'])
-                         })
+        first_sets = _build_first_sets([
+            ('A', 'B'),
+            ('B', 'b')
+        ])
+        self.assertEqual(first_sets['A'], set(['b']))
 
     def test_child_epsilon(self):
-        # A -> B
-        # B -> epsilon | b
-        rules = [
-            Rule(NSym('A'), [NSym('B')]),
-            Rule(NSym('B'), [TSym(EPSILON_CHAR)]),
-            Rule(NSym('B'), [TSym('b')])
-        ]
+        first_sets = _build_first_sets([
+            ('A', 'B'),
+            ('B', EPSILON_CHAR),
+            ('B', 'b')
+        ])
+        self.assertEqual(first_sets['A'], set(['b']))
+        self.assertEqual(first_sets['B'], set(['b', EPSILON_CHAR]))
 
-        self.assertEqual(build_first_sets(rules),
-                         {
-                             'A': set(['b']),
-                             'B': set(['b', EPSILON_CHAR])
-                         })
+        first_sets = _build_first_sets([
+            ('A', 'BC'),
+            ('B', EPSILON_CHAR),
+            ('B', 'b'),
+            ('C', 'c')
+        ])
+        self.assertEqual(first_sets['A'], set(['b', 'c']))
 
-        # A -> BC
-        # B -> epsilon
-        # C -> c
-        rules = [
-            Rule(NSym('A'), [NSym('B'), NSym('C')]),
-            Rule(NSym('B'), [TSym(EPSILON_CHAR)]),
-            Rule(NSym('C'), [TSym('c')])
-        ]
-
-        self.assertEqual(build_first_sets(rules),
-                         {
-                             'A': set(['c']),
-                             'B': set([EPSILON_CHAR]),
-                             'C': set(['c'])
-                         })
-
-        # A -> BC
-        # B -> epsilon
-        # C -> epsilon
-        rules = [
-            Rule(NSym('A'), [NSym('B'), NSym('C')]),
-            Rule(NSym('B'), [TSym(EPSILON_CHAR)]),
-            Rule(NSym('C'), [TSym(EPSILON_CHAR)])
-        ]
-
-        self.assertEqual(build_first_sets(rules),
-                         {
-                             'A': set([EPSILON_CHAR]),
-                             'B': set([EPSILON_CHAR]),
-                             'C': set([EPSILON_CHAR])
-                         })
+        first_sets = _build_first_sets([
+            ('A', 'BC'),
+            ('B', EPSILON_CHAR),
+            ('C', EPSILON_CHAR)
+        ])
+        self.assertEqual(first_sets['A'], set([EPSILON_CHAR]))
 
 class TestFollowSets(unittest.TestCase):
-    pass
+
+    def test_eof_follows_start(self):
+        # A -> a
+
+        pass
