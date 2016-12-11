@@ -30,6 +30,10 @@ def _build_first_sets(rule_strs):
     rules = build_rules(rule_strs)
     return build_first_sets(rules)
 
+def _build_follow_sets(rule_strs, first_sets):
+    rules = build_rules(rule_strs)
+    return build_follow_sets(rules, first_sets)
+
 class TestFirstSets(unittest.TestCase):
     def test_basic(self):
         first_sets = _build_first_sets([
@@ -71,6 +75,56 @@ class TestFirstSets(unittest.TestCase):
 class TestFollowSets(unittest.TestCase):
 
     def test_eof_follows_start(self):
-        # A -> a
+        rule_strs = [
+            ('A', 'b')
+        ]
+        first_sets = {
+            'A': set(['b'])
+        }
+        follow_sets = _build_follow_sets(rule_strs, first_sets)
+        self.assertIn(END_SYMBOL, follow_sets['A'])
 
-        pass
+    def test_basic(self):
+        rule_strs = [
+            ('A', 'Bc'),
+            ('B', 'b')
+        ]
+        first_sets = {
+            'A': set(['b']),
+            'B': set(['b'])
+        }
+        follow_sets = _build_follow_sets(rule_strs, first_sets)
+        self.assertEqual(follow_sets['B'], set(['c']))
+
+    def test_epsilon(self):
+        rule_strs = [
+            ('A', 'BCD'),
+            ('B', 'b'),
+            ('C', EPSILON_CHAR),
+            ('D', 'd')
+        ]
+        first_sets = {
+            'A': set(['b']),
+            'B': set(['b']),
+            'C': set([EPSILON_CHAR]),
+            'D': set(['d'])
+        }
+        follow_sets = _build_follow_sets(rule_strs, first_sets)
+        self.assertEqual(follow_sets['B'], set(['d']))
+
+        rule_strs = [
+            ('A', 'Be'),
+            ('B', 'CDE'),
+            ('C', 'c'),
+            ('D', EPSILON_CHAR),
+            ('E', EPSILON_CHAR)
+        ]
+        first_sets = {
+            'A': set(['c']),
+            'B': set(['c']),
+            'C': set(['c']),
+            'D': set([EPSILON_CHAR]),
+            'E': set([EPSILON_CHAR])
+        }
+        follow_sets = _build_follow_sets(rule_strs, first_sets)
+        self.assertEqual(follow_sets['C'], set(['e']))

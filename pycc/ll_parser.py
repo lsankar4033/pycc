@@ -37,8 +37,7 @@ test_rules = [
 # Output is a map of (nonterminal_char, terminal_char) -> Rule
 def build_parse_table(rules):
     first_sets = build_first_sets(rules)
-    # TODO
-    #follow_sets = build_follow_sets(rules)
+    follow_sets = build_follow_sets(rules, first_sets)
 
     # Build parse table from first/follow sets. If any duplicate vals for a single tuple key, raise an
     # exception stating that the grammar isn't LL(1)
@@ -60,10 +59,10 @@ def _add_sym_to_first_sets(sym, rules, first_sets):
 
     for rule in sym_rules:
         i = 0
-        found_epsilon = True
-        while found_epsilon and i < len(rule.exp_syms):
+        has_trailing_epsilon = True
+        while has_trailing_epsilon and i < len(rule.exp_syms):
             next_sym = rule.exp_syms[i]
-            found_epsilon = False
+            has_trailing_epsilon = False
 
             # NOTE this assumes that there aren't terminal epsilons in the middle of expressions. I should
             # check this during grammar validation
@@ -76,7 +75,7 @@ def _add_sym_to_first_sets(sym, rules, first_sets):
 
                 next_terms = first_sets[next_sym.char]
                 if EPSILON_CHAR in next_terms:
-                    found_epsilon = True
+                    has_trailing_epsilon = True
                     to_add = next_terms.copy()
                     to_add.remove(EPSILON_CHAR)
 
@@ -88,11 +87,72 @@ def _add_sym_to_first_sets(sym, rules, first_sets):
                     sym_first_sets |= to_add
             i += 1
 
-        if found_epsilon and i is len(rule.exp) and len(sym_first_sets) is 0:
+        if has_trailing_epsilon and i is len(rule.exp_syms) and len(sym_first_sets) is 0:
             sym_first_sets.add(EPSILON_CHAR)
 
     first_sets[sym.char] = sym_first_sets
     return first_sets
+
+# NOTE - assumes start rule is first rule in 'rules'
+def build_follow_sets(rules, first_sets):
+    start_sym = rules[0].sym
+    follow_sets = {start_sym.char: set([END_SYMBOL])}
+    nonterm_syms = set([rule.sym for rule in rules])
+
+    for sym in nonterm_syms:
+        if sym is start_sym or sym.char not in follow_sets:
+            follow_sets = _add_sym_to_follow_sets(sym, rules, first_sets, follow_sets)
+
+    return follow_sets
+
+# TODO - much of the logic in this method is duplicated in first_set computation...
+def _add_sym_to_follow_sets(sym, rules, first_sets, follow_sets):
+    sym_follow_sets = follow_sets[sym.char] if sym.char in follow_sets else set()
+    rules_with_sym = [rule for rule in rules if sym in rule.exp_syms]
+    for rule in rules_with_sym:
+        sym_ind = rule.exp_syms.index(sym)
+
+        if sym_ind is len(rule.exp_syms) - 1:
+            if rule.sym.char not in follow_sets:
+                follow_sets = _add_sym_to_follow_sets(rule.sym, rules, first_sets, follow_sets)
+
+            sym_follow_sets |= follow_sets[rule.sym.char]
+
+        else:
+            i = sym_ind + 1
+            has_trailing_epsilon = True
+            while has_trailing_epsilon and i < len(rule.exp_syms):
+                has_trailing_epsilon = False
+                next_sym = rule.exp_syms[i]
+
+                if type(next_sym) is TSym:
+                    sym_follow_sets.add(next_sym.char)
+
+                else:
+                    next_terms = first_sets[next_sym.char]
+                    if EPSILON_CHAR in next_terms:
+                        has_trailing_epsilon = True
+                        to_add = next_terms.copy()
+                        to_add.remove(EPSILON_CHAR)
+
+                        sym_follow_sets |= to_add
+
+                    else:
+                        to_add = next_terms.copy()
+
+                        sym_follow_sets |= to_add
+
+                i += 1
+
+            if has_trailing_epsilon and i is len(rule.exp_syms) and len(sym_follow_sets) is 0:
+                # TODO - this code is duplicated above
+                if rule.sym.char not in follow_sets:
+                    follow_sets = _add_sym_to_follow_sets(rule.sym, rules, first_sets, follow_sets)
+
+                sym_follow_sets |= follow_sets[rule.sym.char]
+
+    follow_sets[sym.char] = sym_follow_sets
+    return follow_sets
 
 
 class LLParser:
