@@ -6,12 +6,7 @@
 # a check here
 
 from collections import namedtuple
-
-# TODO - It's a little unfortunate that we need to translate between symbol and char space while building
-# first/follow sets. There may be a cleaner way to do this.
-Rule = namedtuple('Rule', ['sym', 'exp_syms'])
-TSym = namedtuple('TerminalSymbol', 'char')
-NSym = namedtuple('NonterminalSymbol', 'char')
+from pycc.grammar import *
 
 EPSILON_CHAR = ''
 END_SYMBOL = 'EOF'

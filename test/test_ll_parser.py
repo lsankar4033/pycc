@@ -1,5 +1,6 @@
 import unittest
 from pycc.ll_parser import *
+from pycc.grammar import *
 
 def build_rules(rule_strs):
     """Test-only helper for building rule array from an array of the form:
