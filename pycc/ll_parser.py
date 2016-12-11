@@ -30,13 +30,31 @@ test_rules = [
 ]
 
 # Output is a map of (nonterminal_char, terminal_char) -> Rule
-def build_parse_table(rules):
-    first_sets = build_first_sets(rules)
-    follow_sets = build_follow_sets(rules, first_sets)
+def build_parse_table(rules, first_sets, follow_sets):
+    parse_table = {}
 
-    # Build parse table from first/follow sets. If any duplicate vals for a single tuple key, raise an
-    # exception stating that the grammar isn't LL(1)
-    return {}
+    for rule in rules:
+        sym_char = rule.sym.char
+        first_chars = first_sets[sym_char]
+
+        for c in first_chars:
+            if c is not EPSILON_CHAR:
+                _add_to_parse_table(parse_table, sym_char, c, rule)
+
+        if EPSILON_CHAR in first_chars:
+            follow_chars = follow_sets[sym_char]
+            for c in follow_chars:
+                _add_to_parse_table(parse_table, sym_char, c, rule)
+
+    return parse_table
+
+def _add_to_parse_table(parse_table, nonterm, term, rule):
+    if (nonterm, term) in parse_table:
+        # TODO - make this error message more informative
+        raise ValueError("Received non LL(1) grammar!")
+
+    # NOTE - maybe this should just be the exp?
+    parse_table[(nonterm, term)] = rule
 
 def build_first_sets(rules):
     first_sets = {}
@@ -158,4 +176,7 @@ class LLParser:
         # - no nonterminal symbols used without
         # TODO add some grammar transformation (remove left recursion, left factoring)
         self.start_symbol = rules[0].sym
-        self.parse_table = build_parse_table(rules)
+
+        first_sets = build_first_sets(rules)
+        follow_sets = build_follow_sets(rules, first_sets)
+        self.parse_table = build_parse_table(rules, first_sets, follow_sets)
