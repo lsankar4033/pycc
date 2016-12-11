@@ -7,11 +7,14 @@
 
 from collections import namedtuple
 
-Rule = namedtuple('Rule', ['sym', 'exp'])
+# TODO - It's a little unfortunate that we need to translate between symbol and char space while building
+# first/follow sets. There may be a cleaner way to do this.
+Rule = namedtuple('Rule', ['sym', 'exp_syms'])
 TSym = namedtuple('TerminalSymbol', 'char')
 NSym = namedtuple('NonterminalSymbol', 'char')
 
 EPSILON_CHAR = ''
+END_SYMBOL = 'EOF'
 
 # T' -> G, E' -> H as defined in the stanford recitation notes
 # This is a grammar for addition or multiplication strings with only 0s (obviously nonsensical)
@@ -58,10 +61,12 @@ def _add_sym_to_first_sets(sym, rules, first_sets):
     for rule in sym_rules:
         i = 0
         found_epsilon = True
-        while found_epsilon and i < len(rule.exp):
-            next_sym = rule.exp[i]
+        while found_epsilon and i < len(rule.exp_syms):
+            next_sym = rule.exp_syms[i]
             found_epsilon = False
 
+            # NOTE this assumes that there aren't terminal epsilons in the middle of expressions. I should
+            # check this during grammar validation
             if type(next_sym) is TSym:
                 sym_first_sets.add(next_sym.char)
 
