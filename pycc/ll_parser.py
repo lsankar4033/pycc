@@ -12,25 +12,6 @@ from pycc.grammar import *
 EPSILON_CHAR = ''
 END_SYMBOL = 'EOF'
 
-# T' -> G, E' -> H as defined in the stanford recitation notes
-# This is a grammar for addition or multiplication strings with only 0s (obviously nonsensical)
-# NOTE - just for testing!
-# TODO - remove
-test_rules = [
-    Rule(NSym('E'), [NSym('T'), NSym('H')]),
-
-    Rule(NSym('H'), [TSym('+'), NSym('T'), NSym('H')]),
-    Rule(NSym('H'), [TSym('')]),
-
-    Rule(NSym('T'), [NSym('F'), NSym('G')]),
-
-    Rule(NSym('G'), [TSym('*'), NSym('F'), NSym('G')]),
-    Rule(NSym('G'), [TSym('')]),
-
-    Rule(NSym('F'), [TSym('('), NSym('E'), TSym(')')]),
-    Rule(NSym('F'), [TSym('0')])
-]
-
 # Output is a map of (nonterminal_char, terminal_char) -> Rule
 def build_parse_table(rules, first_sets, follow_sets):
     parse_table = {}
