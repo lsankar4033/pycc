@@ -129,3 +129,51 @@ class TestFollowSets(unittest.TestCase):
         }
         follow_sets = _build_follow_sets(rule_strs, first_sets)
         self.assertEqual(follow_sets['C'], set(['e']))
+
+integration_test_rules = build_rules(
+    [
+        ('E', 'TH'),
+        ('H', '+TH'),
+        ('H', EPSILON_CHAR),
+        ('T', 'FG'),
+        ('G', '*FG'),
+        ('G', EPSILON_CHAR),
+        ('F', '(E)'),
+        ('F', '0')
+    ])
+
+class TestTopoSort(unittest.TestCase):
+    def test_simple(self):
+        self.assertEqual(topo_sort({'A': set(['B']), 'B': set(['C'])}),
+                         ['A', 'B', 'C'])
+
+    def test_multiple_dependency(self):
+        ts = topo_sort({'A': set(['B']), 'C': set(['B'])})
+        self.assertTrue(ts.index('A') < ts.index('B'))
+        self.assertTrue(ts.index('C') < ts.index('B'))
+
+    def test_cyclic_dependency(self):
+        with self.assertRaises(ValueError):
+            topo_sort({'A': set(['B']), 'B': set(['A'])})
+
+# A series of integration tests run on a more complex sample grammar
+class TestIntegration(unittest.TestCase):
+    def test_first_sets(self):
+        first_sets = build_first_sets(integration_test_rules)
+        self.assertEqual(first_sets, {
+            'E': set(['(', '0']),
+            'T': set(['(', '0']),
+            'F': set(['(', '0']),
+            'G': set(['*', EPSILON_CHAR]),
+            'H': set(['+', EPSILON_CHAR])})
+
+    def test_follow_sets(self):
+        first_sets = build_first_sets(integration_test_rules)
+        follow_sets = build_follow_sets(integration_test_rules, first_sets)
+
+        self.assertEqual(follow_sets, {
+            'E': set([END_SYMBOL, ')']),
+            'H': set([END_SYMBOL, ')']),
+            'T': set(['+', END_SYMBOL, ')']),
+            'G': set(['+', END_SYMBOL, ')']),
+            'F': set(['*', '+', END_SYMBOL, ')'])})
