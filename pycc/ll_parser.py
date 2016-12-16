@@ -17,9 +17,9 @@ def build_parse_table(rules, first_sets, follow_sets):
     parse_table = {}
 
     for rule in rules:
-        sym_char = rule.sym.char
-        first_chars = first_sets[sym_char]
+        first_chars = get_first_chars(first_sets, rule.exp_syms, 0)
 
+        sym_char = rule.sym.char
         for c in first_chars:
             if c is not EPSILON_CHAR:
                 _add_to_parse_table(parse_table, sym_char, c, rule)
@@ -31,13 +31,48 @@ def build_parse_table(rules, first_sets, follow_sets):
 
     return parse_table
 
+# TODO - currently this logic exists in 3 separate places... I should figure out how to abstract the common
+# bit out
+def get_first_chars(first_sets, syms, start_ind):
+    first_chars = set()
+
+    i = start_ind
+    has_trailing_epsilon = True
+    while has_trailing_epsilon and i < len(syms):
+        next_sym = syms[i]
+        has_trailing_epsilon = False
+
+        if type(next_sym) is TSym:
+            first_chars.add(next_sym.char)
+
+        else:
+            next_terms = first_sets[next_sym.char]
+            if EPSILON_CHAR in next_terms:
+                has_trailing_epsilon = True
+                to_add = next_terms.copy()
+                to_add.remove(EPSILON_CHAR)
+
+                first_chars |= to_add
+
+            else:
+                to_add = next_terms.copy()
+
+                first_chars |= to_add
+
+        i += 1
+
+    if has_trailing_epsilon and i is len(syms):
+        first_chars.add(EPSILON_CHAR)
+
+    return first_chars
+
 def _add_to_parse_table(parse_table, nonterm, term, rule):
-    if (nonterm, term) in parse_table:
-        # TODO - make this error message more informative
-        raise ValueError("Received non LL(1) grammar!")
+    parse_table_exp = [str(s) for s in rule.exp_syms]
+    if (nonterm, term) in parse_table and parse_table[(nonterm, term)] is not parse_table_exp:
+        raise ValueError("Received non LL(1) grammar! {} -> {} appears more than once in parse table.".format(nonterm, term))
 
     # NOTE - maybe this should just be the exp?
-    parse_table[(nonterm, term)] = rule
+    parse_table[(nonterm, term)] = parse_table_exp
 
 # TODO - make sure we can't enter this method for cyclic first_set dependencies
 def build_first_sets(rules):

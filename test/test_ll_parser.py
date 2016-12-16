@@ -130,18 +130,6 @@ class TestFollowSets(unittest.TestCase):
         follow_sets = _build_follow_sets(rule_strs, first_sets)
         self.assertEqual(follow_sets['C'], set(['e']))
 
-integration_test_rules = build_rules(
-    [
-        ('E', 'TH'),
-        ('H', '+TH'),
-        ('H', EPSILON_CHAR),
-        ('T', 'FG'),
-        ('G', '*FG'),
-        ('G', EPSILON_CHAR),
-        ('F', '(E)'),
-        ('F', '0')
-    ])
-
 class TestTopoSort(unittest.TestCase):
     def test_simple(self):
         self.assertEqual(topo_sort({'A': set(['B']), 'B': set(['C'])}),
@@ -155,6 +143,17 @@ class TestTopoSort(unittest.TestCase):
     def test_cyclic_dependency(self):
         with self.assertRaises(ValueError):
             topo_sort({'A': set(['B']), 'B': set(['A'])})
+
+# E' -> H, T' -> G
+integration_test_rules = build_rules(
+    [('E', 'TH'),
+     ('H', '+TH'),
+     ('H', EPSILON_CHAR),
+     ('T', 'FG'),
+     ('G', '*FG'),
+     ('G', EPSILON_CHAR),
+     ('F', '(E)'),
+     ('F', '0')])
 
 # A series of integration tests run on a more complex sample grammar
 class TestIntegration(unittest.TestCase):
@@ -177,3 +176,23 @@ class TestIntegration(unittest.TestCase):
             'T': set(['+', END_SYMBOL, ')']),
             'G': set(['+', END_SYMBOL, ')']),
             'F': set(['*', '+', END_SYMBOL, ')'])})
+
+    def test_parse_table(self):
+        first_sets = build_first_sets(integration_test_rules)
+        follow_sets = build_follow_sets(integration_test_rules, first_sets)
+        parse_table = build_parse_table(integration_test_rules, first_sets, follow_sets)
+
+        self.assertEqual(parse_table, {
+            ('E', '0'): ['T', 'H'],
+            ('E', '('): ['T', 'H'],
+            ('H', '+'): ['+', 'T', 'H'],
+            ('H', ')'): [EPSILON_CHAR],
+            ('H', END_SYMBOL): [EPSILON_CHAR],
+            ('T', '0'): ['F', 'G'],
+            ('T', '('): ['F', 'G'],
+            ('G', '+'): [EPSILON_CHAR],
+            ('G', '*'): ['*', 'F', 'G'],
+            ('G', ')'): [EPSILON_CHAR],
+            ('G', END_SYMBOL): [EPSILON_CHAR],
+            ('F', '0'): ['0'],
+            ('F', '('): ['(', 'E', ')']})
