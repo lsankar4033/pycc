@@ -291,8 +291,52 @@ class LLParser:
         # TODO add some basic rule validation
         # - no nonterminal symbols used without
         # TODO add some grammar transformation (remove left recursion, left factoring)
-        self.start_symbol = rules[0].sym
+        self.start_symbol = rules[0].sym.char
+        self.nonterminals = set([rule.sym.char for rule in rules])
 
         first_sets = build_first_sets(rules)
         follow_sets = build_follow_sets(rules, first_sets)
         self.parse_table = build_parse_table(rules, first_sets, follow_sets)
+
+    # TODO - remove print statements and clean up!
+    def parse(self, s):
+        parse_stack = [END_SYMBOL, self.start_symbol]
+        i = 0
+
+        s_list = list(s) + [END_SYMBOL]
+        while i < len(s_list):
+
+            # successful full match
+            if parse_stack[-1] == END_SYMBOL and s_list[i] == END_SYMBOL:
+                return True
+
+            # match
+            elif parse_stack[-1] == s_list[i]:
+                print("match")
+                parse_stack.pop()
+                print(parse_stack)
+                i += 1
+
+            # predict attempt
+            elif parse_stack[-1] != s_list[i] and parse_stack[-1] in self.nonterminals:
+                print("predict attempt")
+                X = parse_stack.pop()
+                a = s_list[i]
+
+                # predict miss
+                if (X, a) not in self.parse_table:
+                    print("predict fail {} for {}".format(X, a))
+                    return False
+
+                print("predict {} for {}".format(X, a))
+                syms = self.parse_table[(X, a)].copy()
+                syms.reverse()
+
+                parse_stack = parse_stack + [sym for sym in syms if sym is not EPSILON_CHAR]
+                print(parse_stack)
+
+            # mismatch
+            else:
+                return False
+
+        return True

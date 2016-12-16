@@ -196,3 +196,14 @@ class TestIntegration(unittest.TestCase):
             ('G', END_SYMBOL): [EPSILON_CHAR],
             ('F', '0'): ['0'],
             ('F', '('): ['(', 'E', ')']})
+
+    def test_parse(self):
+        parser = LLParser(integration_test_rules)
+
+        self.assertTrue(parser.parse('0'))
+        self.assertTrue(parser.parse('0+0*0'))
+        self.assertTrue(parser.parse('(0+0)*(0+0)'))
+
+        self.assertFalse(parser.parse('0+'))
+        self.assertFalse(parser.parse('(0+0'))
+        self.assertFalse(parser.parse('(0+0)*0)'))
