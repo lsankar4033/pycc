@@ -1,0 +1,2 @@
+EPSILON_CHAR = ''
+END_SYMBOL = 'EOF'
