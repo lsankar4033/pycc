@@ -1,9 +1,8 @@
 # Technique taken from this document:
 # http://web.stanford.edu/class/archive/cs/cs143/cs143.1128/handouts/090%20Top-Down%20Parsing.pdf
 
-from collections import namedtuple
 from copy import deepcopy
-from pycc.grammar import *
+from pycc.grammar import NSym, TSym
 
 EPSILON_CHAR = ''
 END_SYMBOL = 'EOF'
