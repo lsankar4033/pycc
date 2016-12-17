@@ -8,7 +8,6 @@ from pycc.grammar import *
 EPSILON_CHAR = ''
 END_SYMBOL = 'EOF'
 
-# TODO - docstring
 def build_parse_table(rules, first_sets, follow_sets):
     parse_table = {}
 
@@ -32,7 +31,6 @@ def _add_to_parse_table(parse_table, nonterm, term, rule):
     if (nonterm, term) in parse_table and parse_table[(nonterm, term)] is not parse_table_exp:
         raise ValueError("Received non LL(1) grammar! {} -> {} appears more than once in parse table.".format(nonterm, term))
 
-    # NOTE - maybe this should just be the exp?
     parse_table[(nonterm, term)] = parse_table_exp
 
 # TODO - make sure we can't enter this method for cyclic first_set dependencies
@@ -120,8 +118,11 @@ def topo_sort(g_in):
 
     return ret
 
-# TODO explanatory comment
 def _process_rule_follow(rule, all_rules, first_sets, follow_sets, dependencies):
+    """Process a single rule during follow set computation. This method doesn't fully compute follow sets, but
+    instead does whatever it can with first_sets and tracks follow set dependencies to later be processed in
+    topological sort order.
+    """
     new_dependencies = dependencies.copy()
     new_follow_sets = follow_sets.copy()
 
@@ -152,7 +153,6 @@ def _process_rule_follow(rule, all_rules, first_sets, follow_sets, dependencies)
 
     return (new_follow_sets, new_dependencies)
 
-# TODO - much of the logic in this method is duplicated in first_set computation...
 def _add_sym_to_follow_sets(sym, rules, first_sets, follow_sets):
     sym_follow_sets = follow_sets[sym.char] if sym.char in follow_sets else set()
     rules_with_sym = [rule for rule in rules if sym in rule.exp_syms]
@@ -261,7 +261,6 @@ class LLParser:
         follow_sets = build_follow_sets(rules, first_sets)
         self.parse_table = build_parse_table(rules, first_sets, follow_sets)
 
-    # TODO - remove print statements and clean up!
     def parse(self, s):
         parse_stack = [END_SYMBOL, self.start_symbol]
         i = 0
