@@ -9,6 +9,7 @@ class LLParser:
         # TODO add some basic rule validation
         # - no nonterminal symbols used without
         # TODO add some grammar transformation (remove left recursion, left factoring)
+        # TODO add the ability for escape characters (like \s or \w) in grammars
         self.start_symbol = rules[0].sym.char
         self.nonterminals = set([rule.sym.char for rule in rules])
 
