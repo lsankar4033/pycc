@@ -55,7 +55,7 @@ class TestFirstSets(unittest.TestCase):
             ('B', EPSILON_CHAR),
             ('B', 'b')
         ])
-        self.assertEqual(first_sets['A'], set(['b']))
+        self.assertEqual(first_sets['A'], set(['b', EPSILON_CHAR]))
         self.assertEqual(first_sets['B'], set(['b', EPSILON_CHAR]))
 
         first_sets = _build_first_sets([
