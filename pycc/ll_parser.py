@@ -1,3 +1,5 @@
+# Techniques taken from
+# http://web.stanford.edu/class/archive/cs/cs143/cs143.1128/handouts/090%20Top-Down%20Parsing.pdf
 import pycc.parse_table as parse_table
 from pycc.constants import EPSILON_CHAR, END_SYMBOL
 
