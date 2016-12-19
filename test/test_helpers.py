@@ -1,8 +1,8 @@
 from pycc.grammar import *
 from pycc.constants import *
 
-def build_rules(rule_strs):
-    """Test-only helper for building rule array from an array of the form:
+def build_grammar(rule_strs):
+    """Test-only helper for building Grammar object from an array of the form:
     [ ('A', 'Bc'),
       ('B', 'd'),
       ('B', '') ]
@@ -12,6 +12,8 @@ def build_rules(rule_strs):
     that no 'epsilon' char can occur within an expression (as this would make for an invalid grammar).
     """
     nonterm_chars = set([r[0] for r in rule_strs])
+
+    start_symbol = NSym(rule_strs[0][0])
 
     rules = []
     for sym, exp_str in rule_strs:
@@ -24,11 +26,11 @@ def build_rules(rule_strs):
 
         rules.append(Rule(NSym(sym), exp))
 
-    return rules
+    return Grammar(rules, start_symbol)
 
 # E' -> H, T' -> G
 # Represents a +,* string with 0s
-integration_test_rules = build_rules(
+integration_test_grammar = build_grammar(
     [('E', 'TH'),
      ('H', '+TH'),
      ('H', EPSILON_CHAR),

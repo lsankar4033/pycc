@@ -4,12 +4,12 @@ from pycc.constants import *
 from test.test_helpers import *
 
 def _build_first_sets(rule_strs):
-    rules = build_rules(rule_strs)
-    return build_first_sets(rules)
+    grammar = build_grammar(rule_strs)
+    return build_first_sets(grammar)
 
 def _build_follow_sets(rule_strs, first_sets):
-    rules = build_rules(rule_strs)
-    return build_follow_sets(rules, first_sets)
+    grammar= build_grammar(rule_strs)
+    return build_follow_sets(grammar, first_sets)
 
 class TestFirstSets(unittest.TestCase):
     def test_basic(self):
@@ -123,7 +123,7 @@ class TestTopoSort(unittest.TestCase):
 
 class TestIntegration(unittest.TestCase):
     def test_first_sets(self):
-        first_sets = build_first_sets(integration_test_rules)
+        first_sets = build_first_sets(integration_test_grammar)
         self.assertEqual(first_sets, {
             'E': set(['(', '0']),
             'T': set(['(', '0']),
@@ -132,8 +132,8 @@ class TestIntegration(unittest.TestCase):
             'H': set(['+', EPSILON_CHAR])})
 
     def test_follow_sets(self):
-        first_sets = build_first_sets(integration_test_rules)
-        follow_sets = build_follow_sets(integration_test_rules, first_sets)
+        first_sets = build_first_sets(integration_test_grammar)
+        follow_sets = build_follow_sets(integration_test_grammar, first_sets)
 
         self.assertEqual(follow_sets, {
             'E': set([END_SYMBOL, ')']),
@@ -143,9 +143,9 @@ class TestIntegration(unittest.TestCase):
             'F': set(['*', '+', END_SYMBOL, ')'])})
 
     def test_parse_table(self):
-        first_sets = build_first_sets(integration_test_rules)
-        follow_sets = build_follow_sets(integration_test_rules, first_sets)
-        parse_table = build_parse_table(integration_test_rules, first_sets, follow_sets)
+        first_sets = build_first_sets(integration_test_grammar)
+        follow_sets = build_follow_sets(integration_test_grammar, first_sets)
+        parse_table = build_parse_table(integration_test_grammar, first_sets, follow_sets)
 
         self.assertEqual(parse_table, {
             ('E', '0'): ['T', 'H'],

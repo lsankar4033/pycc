@@ -7,21 +7,23 @@ from pycc.constants import EPSILON_CHAR, END_SYMBOL
 class LLParser:
     # We may want to add some helpers for converting a string to rules, etc.
     # Assume that the first rule supplied is the start rule
-    def __init__(self, rules):
+    def __init__(self, grammar):
         # TODO add some basic rule validation
-        # - no nonterminal symbols used without
+        # - no nonterminal symbol used that doesn't have a lefthand rule
         # TODO add some grammar transformation (remove left recursion, left factoring)
         # TODO add the ability for escape characters (like \s or \w) in grammars
-        self.start_symbol = rules[0].sym.char
-        self.nonterminals = set([rule.sym.char for rule in rules])
+        self.grammar = grammar
+
+        # For convenience
+        self.nonterminals = set([rule.sym.char for rule in grammar.rules])
 
         # TODO - it might be worth consolidating this into one method call in the future
-        first_sets = parse_table.build_first_sets(rules)
-        follow_sets = parse_table.build_follow_sets(rules, first_sets)
-        self.parse_table = parse_table.build_parse_table(rules, first_sets, follow_sets)
+        first_sets = parse_table.build_first_sets(grammar)
+        follow_sets = parse_table.build_follow_sets(grammar, first_sets)
+        self.parse_table = parse_table.build_parse_table(grammar, first_sets, follow_sets)
 
     def parse(self, s):
-        parse_stack = [END_SYMBOL, self.start_symbol]
+        parse_stack = [END_SYMBOL, self.grammar.start_symbol.char]
         i = 0
 
         s_list = list(s) + [END_SYMBOL]

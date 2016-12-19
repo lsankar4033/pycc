@@ -72,7 +72,8 @@ def remove_duplicates(seq):
     seen_add = seen.add
     return [x for x in seq if not (x in seen or seen_add(x))]
 
-# TODO - Remove indirect recursion
+# TODO - Remove indirect recursion. It's probably worth improving the data model for Rules to what the start
+# symbol is or something...
 def remove_left_recursion(rules, nonterminal_gen = None):
     """Returns a new set of rules with all left recursion removed. Optionally takes a generator for new
     symbols, but otherwise generates symbols based on the lexicographically last symbol in the provided rules.

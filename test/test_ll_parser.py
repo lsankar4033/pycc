@@ -6,7 +6,7 @@ from test.test_helpers import *
 
 class TestIntegration(unittest.TestCase):
     def test_parse(self):
-        parser = LLParser(integration_test_rules)
+        parser = LLParser(integration_test_grammar)
 
         self.assertTrue(parser.parse('0'))
         self.assertTrue(parser.parse('0+0*0'))

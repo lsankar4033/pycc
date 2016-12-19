@@ -2,11 +2,11 @@ from copy import deepcopy
 from pycc.grammar import NSym, TSym
 from pycc.constants import EPSILON_CHAR, END_SYMBOL
 
-def build_parse_table(rules, first_sets, follow_sets):
+def build_parse_table(grammar, first_sets, follow_sets):
     parse_table = {}
 
-    for rule in rules:
-        (first_sets, first_chars) = _get_next_terminals(rules, first_sets, rule.exp_syms, 0)
+    for rule in grammar.rules:
+        (first_sets, first_chars) = _get_next_terminals(grammar.rules, first_sets, rule.exp_syms, 0)
 
         sym_char = rule.sym.char
         for c in first_chars:
@@ -21,7 +21,7 @@ def build_parse_table(rules, first_sets, follow_sets):
     return parse_table
 
 def _add_to_parse_table(parse_table, nonterm, term, rule):
-    parse_table_exp = [str(s) for s in rule.exp_syms]
+    parse_table_exp = [s.char for s in rule.exp_syms]
     if (nonterm, term) in parse_table and parse_table[(nonterm, term)] is not parse_table_exp:
         raise ValueError("Received non LL(1) grammar! {} -> {} appears more than once in parse table.".format(nonterm, term))
 
@@ -29,13 +29,13 @@ def _add_to_parse_table(parse_table, nonterm, term, rule):
 
 # TODO - make sure we can't enter this method for cyclic first_set dependencies
 # I.e. if a first set depends on another first set that depends on the first one. This should be detected.
-def build_first_sets(rules):
+def build_first_sets(grammar):
     first_sets = {}
-    nonterm_syms = set([rule.sym for rule in rules])
+    nonterm_syms = set([rule.sym for rule in grammar.rules])
 
     for sym in nonterm_syms:
         if sym.char not in first_sets:
-            first_sets = _add_sym_to_first_sets(sym, rules, first_sets)
+            first_sets = _add_sym_to_first_sets(sym, grammar.rules, first_sets)
 
     return first_sets
 
@@ -50,15 +50,15 @@ def _add_sym_to_first_sets(sym, rules, first_sets):
     first_sets[sym.char] = sym_first_sets
     return first_sets
 
-def build_follow_sets(rules, first_sets):
-    start_sym = rules[0].sym
+def build_follow_sets(grammar, first_sets):
+    start_sym = grammar.start_symbol
 
     follow_sets = {start_sym.char: set([END_SYMBOL])}
     follow_dependencies = {} # Map of A -> {B,...} representing that NSym A's set depends on NSym B's set
 
-    for rule in rules:
+    for rule in grammar.rules:
         (follow_sets, follow_dependencies) = _process_rule_follow(rule,
-                                                                  rules,
+                                                                  grammar.rules,
                                                                   first_sets,
                                                                   follow_sets,
                                                                   follow_dependencies)

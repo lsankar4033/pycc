@@ -1,33 +1,33 @@
 # TODO - switch back to namedtuple and add 'str' helper methods
 # A good route may be to define a 'Rules' class that has a bunch of named tuples and a string method on itself
 # for easy testing
+from collections import namedtuple
 
-class Rule:
-    def __init__(self, sym, exp_syms):
-        self.sym = sym
-        self.exp_syms = exp_syms
+class Grammar:
+    def __init__(self, rules, start_symbol):
+        self.rules = rules
+        self.start_symbol = start_symbol
 
-    def __str__(self):
-        return '{} -> {}'.format(str(self.sym), "".join([str(e) for e in self.exp_syms]))
+    def stringify_rules(self):
+        rule_str = ""
 
-    def __eq__(self, other):
-        return self.sym == other.sym and self.exp_syms == other.exp_syms
+        for rule in self.rules:
+            exp_sym_strs = [sym.char for sym in rule.exp_syms]
+            rule_str = rule_str + rule.sym.char + " -> " + str(exp_sym_strs) + "\n"
 
-class Sym:
-    def __init__(self, char):
-        self.char = char
-
-    def __hash__(self):
-        return hash(self.char)
-
-    def __eq__(self, other):
-        return self.char == other.char
+        return rule_str.strip()
 
     def __str__(self):
-        return self.char
+        start_sym_str = "start symbol: {}".format(self.start_symbol.char)
+        rules_str = "rules: \n{}".format(self.stringify_rules())
 
-class TSym(Sym):
-    pass
+        return start_sym_str + "\n" + rules_str
 
-class NSym(Sym):
-    pass
+# Expression symbol is a list of symbols
+Rule = namedtuple('Rule', 'sym exp_syms')
+
+# Terminal symbol
+TSym = namedtuple('TSym', 'char')
+
+# Nonterminal symbol
+NSym = namedtuple('NSym', 'char')
