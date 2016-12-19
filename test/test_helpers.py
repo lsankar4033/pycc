@@ -37,3 +37,6 @@ integration_test_rules = build_rules(
      ('G', EPSILON_CHAR),
      ('F', '(E)'),
      ('F', '0')])
+
+def rules_str(rules):
+    return str([str(r) for r in rules])
