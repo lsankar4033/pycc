@@ -5,7 +5,7 @@ Currently, this module does:
 - left factoring
 """
 
-from pycc.grammar import Rule, NSym, TSym
+from pycc.grammar import Grammar, Rule, NSym, TSym
 from pycc.constants import EPSILON_CHAR, END_SYMBOL
 
 # TODO Add left factoring
@@ -74,19 +74,19 @@ def remove_duplicates(seq):
 
 # TODO - Remove indirect recursion. It's probably worth improving the data model for Rules to what the start
 # symbol is or something...
-def remove_left_recursion(rules, nonterminal_gen = None):
+def remove_left_recursion(grammar, nonterminal_gen = None):
     """Returns a new set of rules with all left recursion removed. Optionally takes a generator for new
     symbols, but otherwise generates symbols based on the lexicographically last symbol in the provided rules.
     """
     if nonterminal_gen is None:
-        nonterminal_gen = nonterminal_generator(rules)
+        nonterminal_gen = nonterminal_generator(grammar.rules)
 
     new_rules = []
 
-    old_nonterminals = remove_duplicates([rule.sym for rule in rules])
+    old_nonterminals = remove_duplicates([rule.sym for rule in grammar.rules])
     for nonterminal in old_nonterminals:
-        rules_to_consider = [rule for rule in rules if rule.sym == nonterminal]
+        rules_to_consider = [rule for rule in grammar.rules if rule.sym == nonterminal]
 
         new_rules.extend(_split_symbol_rules(rules_to_consider, nonterminal_gen))
 
-    return new_rules
+    return Grammar(new_rules, grammar.start_symbol)

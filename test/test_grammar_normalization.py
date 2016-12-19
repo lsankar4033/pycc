@@ -14,8 +14,8 @@ class TestRemoveLeftRecursion(unittest.TestCase):
             [('A', 'A'),
              ('A', 'b')])
 
-        self.assertEqual(remove_left_recursion(grammar.rules),
-                         build_grammar([('A', 'b')]).rules)
+        self.assertEqual(remove_left_recursion(grammar),
+                         build_grammar([('A', 'b')]))
 
     def test_leave_nonrecursive_rules(self):
         grammar = build_grammar(
@@ -23,26 +23,26 @@ class TestRemoveLeftRecursion(unittest.TestCase):
              ('A', 'B'),
              ('B', 'c')])
 
-        self.assertEqual(remove_left_recursion(grammar.rules),
-                         grammar.rules)
+        self.assertEqual(remove_left_recursion(grammar),
+                         grammar)
 
     def test_single_direct_recursion(self):
         grammar = build_grammar(
             [('A', 'Ab')])
 
-        self.assertEqual(remove_left_recursion(grammar.rules),
+        self.assertEqual(remove_left_recursion(grammar),
                          build_grammar(
                              [('A', 'B'),
-                              ('B', 'bB')]).rules)
+                              ('B', 'bB')]))
 
         grammar = build_grammar(
             [('A', 'Ab'),
              ('A', 'c')])
 
-        self.assertEqual(remove_left_recursion(grammar.rules),
+        self.assertEqual(remove_left_recursion(grammar),
                          build_grammar(
                              [('A', 'cB'),
                               ('B', 'bB'),
-                              ('B', EPSILON_CHAR)]).rules)
+                              ('B', EPSILON_CHAR)]))
 
     # TODO - add test for indirect recursion removal

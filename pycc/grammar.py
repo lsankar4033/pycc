@@ -24,6 +24,9 @@ class Grammar:
 
         return start_sym_str + "\n" + rules_str
 
+    def __eq__(self, other):
+        return self.start_symbol == other.start_symbol and self.rules == other.rules
+
 # Expression symbol is a list of symbols
 Rule = namedtuple('Rule', 'sym exp_syms')
 
