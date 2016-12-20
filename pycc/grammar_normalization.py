@@ -5,6 +5,7 @@ Currently, this module does:
 - left factoring
 """
 
+from collections import defaultdict
 from pycc.grammar import Grammar, Rule, NSym, TSym
 from pycc.constants import EPSILON_CHAR, END_SYMBOL
 
@@ -27,9 +28,8 @@ def nonterminal_generator(rules):
         i += 1
         yield chr(i)
 
-# Returns all rules produced by the first rule. Should probably also pass in all rules so we can build symbols
-# for the new rules
-def _split_symbol_rules(symbol_rules, nonterminal_gen):
+# TODO - this method shouldn't have to return a fixed order of rules for the test to pass...
+def _lrr_split_symbol_rules(symbol_rules, nonterminal_gen):
     """Given all the rules for a given symbol, creates a new set of rules by eliminating any left recursive
     rules. If no left recursive rules exist, just returns the original rules.
     """
@@ -72,8 +72,10 @@ def remove_duplicates(seq):
     seen_add = seen.add
     return [x for x in seq if not (x in seen or seen_add(x))]
 
-# TODO - Remove indirect recursion. It's probably worth improving the data model for Rules to what the start
-# symbol is or something...
+def rules_for_symbol(rules, symbol):
+    return [rule for rule in rules if rule.sym == symbol]
+
+# TODO - Remove indirect recursion
 def remove_left_recursion(grammar, nonterminal_gen = None):
     """Returns a new set of rules with all left recursion removed. Optionally takes a generator for new
     symbols, but otherwise generates symbols based on the lexicographically last symbol in the provided rules.
@@ -82,11 +84,86 @@ def remove_left_recursion(grammar, nonterminal_gen = None):
         nonterminal_gen = nonterminal_generator(grammar.rules)
 
     new_rules = []
-
     old_nonterminals = remove_duplicates([rule.sym for rule in grammar.rules])
     for nonterminal in old_nonterminals:
-        rules_to_consider = [rule for rule in grammar.rules if rule.sym == nonterminal]
+        new_rules.extend(
+            _lrr_split_symbol_rules(rules_for_symbol(grammar.rules, nonterminal), nonterminal_gen))
 
-        new_rules.extend(_split_symbol_rules(rules_to_consider, nonterminal_gen))
+    return Grammar(new_rules, grammar.start_symbol)
+
+def longest_common_prefix(exp_syms1, exp_syms2):
+    prefix = []
+    for i in range(min(len(exp_syms1), len(exp_syms2))):
+        if exp_syms1[i] != exp_syms2[i]:
+            break
+
+        prefix.append(exp_syms1[i])
+
+    return tuple(prefix)
+
+def _lf_split_symbol_rules(symbol_rules, nonterminal_gen):
+    symbol = symbol_rules[0].sym
+
+    prefix_map = defaultdict(set)
+    reverse_prefix_map = defaultdict(set)
+    factored_rule_indices = set()
+    for i in range(len(symbol_rules)):
+        for j in range(i + 1, len(symbol_rules)):
+            prefix = longest_common_prefix(symbol_rules[i].exp_syms,
+                                           symbol_rules[j].exp_syms)
+
+            if len(prefix) > 0:
+                prefix_map[prefix] |= set([i,j])
+                reverse_prefix_map[i].add(prefix)
+                reverse_prefix_map[j].add(prefix)
+                factored_rule_indices |= set([i,j])
+
+    # For rules with multiple shared prefixes, pick the largest one and remove all others
+    for i, prefixes in reverse_prefix_map.items():
+        if len(prefixes) > 1:
+            longest_prefix = max(prefixes, key=len)
+            for prefix in prefixes:
+                if prefix != longest_prefix:
+                    prefix_map[prefix].discard(i)
+
+    # Remove all prefixes with only 1 item
+    updated_prefix_map = {}
+    for prefix, indices in prefix_map.items():
+        if len(indices) > 1:
+            updated_prefix_map[prefix] = indices
+        else:
+            factored_rule_indices -= indices
+
+    new_rules = []
+    for prefix_tuple, indices in updated_prefix_map.items():
+        new_sym = NSym(next(nonterminal_gen))
+
+        prefix = list(prefix_tuple)
+        new_rules.append(Rule(symbol, prefix + [new_sym]))
+        for i in indices:
+            original_exp = symbol_rules[i].exp_syms
+            new_exp = original_exp[len(prefix):]
+            if len(new_exp) is 0:
+                new_exp = [TSym(EPSILON_CHAR)]
+            new_rules.append(Rule(new_sym, new_exp))
+
+    for i in range(len(symbol_rules)):
+        if i not in factored_rule_indices:
+            new_rules.append(symbol_rules[i])
+
+    return new_rules
+
+def left_factor(grammar, nonterminal_gen = None):
+    """Removes common left factors that may exist for any nonterminal. Optionally takes a generator for new
+    symbols, but otherwise generates symbols based on the lexicographically last symbol in the provided rules.
+    """
+    if nonterminal_gen is None:
+        nonterminal_gen = nonterminal_generator(grammar.rules)
+
+    new_rules = []
+    old_nonterminals = remove_duplicates([rule.sym for rule in grammar.rules])
+    for nonterminal in old_nonterminals:
+        new_rules.extend(
+            _lf_split_symbol_rules(rules_for_symbol(grammar.rules, nonterminal), nonterminal_gen))
 
     return Grammar(new_rules, grammar.start_symbol)
