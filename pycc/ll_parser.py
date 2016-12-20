@@ -2,6 +2,7 @@
 # http://web.stanford.edu/class/archive/cs/cs143/cs143.1128/handouts/090%20Top-Down%20Parsing.pdf
 import pycc.parse_table as parse_table
 from pycc.constants import EPSILON_CHAR, END_SYMBOL
+from pycc.grammar_normalization import left_factor, remove_left_recursion
 
 # TODO - docstring
 class LLParser:
@@ -10,14 +11,12 @@ class LLParser:
     def __init__(self, grammar):
         # TODO add some basic rule validation
         # - no nonterminal symbol used that doesn't have a lefthand rule
-        # TODO add some grammar transformation (remove left recursion, left factoring)
         # TODO add the ability for escape characters (like \s or \w) in grammars
-        self.grammar = grammar
+        self.grammar = left_factor(remove_left_recursion(grammar))
 
-        # For convenience
+        # For convenience during parsing
         self.nonterminals = set([rule.sym.char for rule in grammar.rules])
 
-        # TODO - it might be worth consolidating this into one method call in the future
         first_sets = parse_table.build_first_sets(grammar)
         follow_sets = parse_table.build_follow_sets(grammar, first_sets)
         self.parse_table = parse_table.build_parse_table(grammar, first_sets, follow_sets)
