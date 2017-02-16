@@ -16,10 +16,4 @@ class TestIntegration(unittest.TestCase):
         self.assertFalse(parser.parse('(0+0'))
         self.assertFalse(parser.parse('(0+0)*0)'))
 
-    # TODO Test a simple regex grammar
-    # Right now, regex_grammar in test_helpers isn't LL(1)...
-    def test_parse_regex(self):
-        pass
-
-
     # TODO - test parse with grammar requiring normalization

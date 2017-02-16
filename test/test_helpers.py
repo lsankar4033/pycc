@@ -43,7 +43,7 @@ integration_test_grammar = build_grammar(
 # Regex grammar for regexes with only '*', concat, '|', and parens
 # TODO add special characters to grammar parsing so we can do better than just parsing regexes with a single
 # character.
-# This isn't LL(1)! This is because each level has multiple ways in which '(' can open an expression.
+# TODO write LR parser to test this guy
 regex_grammar = build_grammar(
     [('R', 'D'),
 
