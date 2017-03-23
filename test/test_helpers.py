@@ -40,29 +40,5 @@ integration_test_grammar = build_grammar(
      ('F', '(E)'),
      ('F', '0')])
 
-# Regex grammar for regexes with only '*', concat, '|', and parens
-# TODO add special characters to grammar parsing so we can do better than just parsing regexes with a single
-# character.
-# TODO write LR parser to test this guy
-regex_grammar = build_grammar(
-    [('R', 'D'),
-
-     ('P', '(R)'),
-
-     ('D', 'C'),
-     ('D', 'C|D'),
-     ('D', 'P'),
-     ('D', 'P|D'),
-
-     ('C', 'S'),
-     ('C', 'SC'),
-     ('C', 'P'),
-     ('C', 'PC'),
-
-     ('S', 'A'),
-     ('S', 'A*'),
-     ('S', 'P'),
-     ('S', 'P*')])
-
 def rules_str(rules):
     return str([str(r) for r in rules])
