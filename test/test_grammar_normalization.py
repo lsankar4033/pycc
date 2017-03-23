@@ -45,8 +45,6 @@ class TestRemoveLeftRecursion(unittest.TestCase):
                               ('B', 'bB'),
                               ('B', EPSILON_CHAR)]))
 
-    # TODO - add test for indirect recursion removal
-
 class TestLeftFactor(unittest.TestCase):
     def test_no_common_left_factors(self):
         grammar = build_grammar(

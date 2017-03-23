@@ -15,5 +15,3 @@ class TestIntegration(unittest.TestCase):
         self.assertFalse(parser.parse('0+'))
         self.assertFalse(parser.parse('(0+0'))
         self.assertFalse(parser.parse('(0+0)*0)'))
-
-    # TODO - test parse with grammar requiring normalization

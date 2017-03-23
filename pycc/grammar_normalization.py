@@ -9,8 +9,6 @@ from collections import defaultdict
 from pycc.grammar import Grammar, Rule, NSym, TSym
 from pycc.constants import EPSILON_CHAR, END_SYMBOL
 
-# TODO Add left factoring
-
 def _is_left_recursive(rule):
     return rule.sym == rule.exp_syms[0]
 
@@ -28,7 +26,6 @@ def nonterminal_generator(rules):
         i += 1
         yield chr(i)
 
-# TODO - this method shouldn't have to return a fixed order of rules for the test to pass...
 def _lrr_split_symbol_rules(symbol_rules, nonterminal_gen):
     """Given all the rules for a given symbol, creates a new set of rules by eliminating any left recursive
     rules. If no left recursive rules exist, just returns the original rules.
@@ -75,7 +72,6 @@ def remove_duplicates(seq):
 def rules_for_symbol(rules, symbol):
     return [rule for rule in rules if rule.sym == symbol]
 
-# TODO - Remove indirect recursion
 def remove_left_recursion(grammar, nonterminal_gen = None):
     """Returns a new set of rules with all left recursion removed. Optionally takes a generator for new
     symbols, but otherwise generates symbols based on the lexicographically last symbol in the provided rules.

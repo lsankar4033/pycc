@@ -1,7 +1,6 @@
 from collections import namedtuple
 
 class Grammar:
-    # TODO - grammar validation
     def __init__(self, rules, start_symbol):
         self.rules = rules
         self.start_symbol = start_symbol

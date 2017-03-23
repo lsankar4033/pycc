@@ -4,14 +4,11 @@ import pycc.parse_table as parse_table
 from pycc.constants import EPSILON_CHAR, END_SYMBOL
 from pycc.grammar_normalization import left_factor, remove_left_recursion
 
-# TODO - docstring
 class LLParser:
     # We may want to add some helpers for converting a string to rules, etc.
     # Assume that the first rule supplied is the start rule
     def __init__(self, grammar):
-        # TODO add some basic rule validation
-        # - no nonterminal symbol used that doesn't have a lefthand rule
-        # TODO add the ability for escape characters (like \s or \w) in grammars
+
         self.grammar = left_factor(remove_left_recursion(grammar))
 
         # For convenience during parsing

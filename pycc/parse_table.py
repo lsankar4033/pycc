@@ -27,8 +27,6 @@ def _add_to_parse_table(parse_table, nonterm, term, rule):
 
     parse_table[(nonterm, term)] = parse_table_exp
 
-# TODO - make sure we can't enter this method for cyclic first_set dependencies
-# I.e. if a first set depends on another first set that depends on the first one. This should be detected.
 def build_first_sets(grammar):
     first_sets = {}
     nonterm_syms = set([rule.sym for rule in grammar.rules])
@@ -187,7 +185,6 @@ def _add_sym_to_follow_sets(sym, rules, first_sets, follow_sets):
                 i += 1
 
             if has_trailing_epsilon and i is len(rule.exp_syms) and len(sym_follow_sets) is 0:
-                # TODO - this code is duplicated above
                 if rule.sym.char not in follow_sets:
                     follow_sets = _add_sym_to_follow_sets(rule.sym, rules, first_sets, follow_sets)
 
