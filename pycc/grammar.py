@@ -1,5 +1,3 @@
-# A good route may be to define a 'Rules' class that has a bunch of named tuples and a string method on itself
-# for easy testing
 from collections import namedtuple
 
 class Grammar:
