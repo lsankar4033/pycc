@@ -6,7 +6,6 @@ class LLParser:
     # We may want to add some helpers for converting a string to rules, etc.
     # Assume that the first rule supplied is the start rule
     def __init__(self, grammar):
-
         self.grammar = left_factor(remove_left_recursion(grammar))
 
         # For convenience during parsing

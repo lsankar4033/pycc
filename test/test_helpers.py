@@ -28,7 +28,6 @@ def build_grammar(rule_strs):
 
     return Grammar(rules, start_symbol)
 
-# E' -> H, T' -> G
 # Represents a +,* string with 0s
 integration_test_grammar = build_grammar(
     [('E', 'TH'),
