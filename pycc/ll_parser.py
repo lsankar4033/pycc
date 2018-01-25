@@ -11,9 +11,7 @@ class LLParser:
         # For convenience during parsing
         self.nonterminals = set([rule.sym.char for rule in grammar.rules])
 
-        first_sets = parse_table.build_first_sets(grammar)
-        follow_sets = parse_table.build_follow_sets(grammar, first_sets)
-        self.parse_table = parse_table.build_parse_table(grammar, first_sets, follow_sets)
+        self.parse_table = parse_table.build_parse_table(grammar)
 
     def parse(self, s):
         parse_stack = [END_SYMBOL, self.grammar.start_symbol.char]
@@ -32,7 +30,7 @@ class LLParser:
                 i += 1
 
             # predict attempt
-            elif parse_stack[-1] != s_list[i] and parse_stack[-1] in self.nonterminals:
+            elif parse_stack[-1] in self.nonterminals:
                 X = parse_stack.pop()
                 a = s_list[i]
 
@@ -45,7 +43,7 @@ class LLParser:
 
                 parse_stack = parse_stack + [sym for sym in syms if sym is not EPSILON_CHAR]
 
-            # mismatch
+            # terminal mismatch
             else:
                 return False
 

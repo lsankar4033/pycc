@@ -2,7 +2,11 @@ from copy import deepcopy
 from pycc.grammar import NSym, TSym
 from pycc.constants import EPSILON_CHAR, END_SYMBOL
 
-def build_parse_table(grammar, first_sets, follow_sets):
+def build_parse_table(grammar, first_sets = None, follow_sets = None):
+    if first_sets is None or follow_sets is None:
+        first_sets = build_first_sets(grammar)
+        follow_sets = build_follow_sets(grammar, first_sets)
+
     parse_table = {}
 
     for rule in grammar.rules:
